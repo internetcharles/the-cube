@@ -17,6 +17,10 @@ const ThreeScene = {
   scene: null,
   cube: null,
   directionalLight: null,
+  woodTexture: null,
+  glassTexture: null,
+  metalTexture: null,
+  furTexture: null,
   dragging: false,
   prev: { x: 0, y: 0 },
 
@@ -39,6 +43,24 @@ const ThreeScene = {
     this.scene.add(this.directionalLight);
 
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.3));
+
+    // Load Wood Texture
+    const textureLoader = new THREE.TextureLoader();
+    this.woodTexture = textureLoader.load("/wood.png");
+    this.woodTexture.wrapS = THREE.RepeatWrapping;
+    this.woodTexture.wrapT = THREE.RepeatWrapping;
+
+    this.glassTexture = textureLoader.load("/glass.png");
+    this.glassTexture.wrapS = THREE.RepeatWrapping;
+    this.glassTexture.wrapT = THREE.RepeatWrapping;
+
+    this.metalTexture = textureLoader.load("/metal.png");
+    this.metalTexture.wrapS = THREE.RepeatWrapping;
+    this.metalTexture.wrapT = THREE.RepeatWrapping;
+
+    this.furTexture = textureLoader.load("/fur.png");
+    this.furTexture.wrapS = THREE.RepeatWrapping;
+    this.furTexture.wrapT = THREE.RepeatWrapping;
 
     // Load Environment HDR
     new RGBELoader().load("/env.hdr", (hdr) => {
@@ -123,11 +145,30 @@ const ThreeScene = {
     this.cube.material = faceMaterials.map((type, index) => {
       const mat = MATERIAL_TYPES[type];
       if (faceModes[index] === "basic") {
-        return new THREE.MeshBasicMaterial(mat.basic);
+        const basicMat = new THREE.MeshBasicMaterial(mat.basic);
+        if (type === "wood" && this.woodTexture) {
+          basicMat.map = this.woodTexture;
+        } else if (type === "glass" && this.glassTexture) {
+          basicMat.map = this.glassTexture;
+        } else if (type === "metal" && this.metalTexture) {
+          basicMat.map = this.metalTexture;
+        } else if (type === "fur" && this.furTexture) {
+          basicMat.map = this.furTexture;
+        }
+        return basicMat;
       } else {
         const pbrProps = { ...mat.pbr };
         pbrProps.roughness = faceRoughness[index];
         pbrProps.metalness = faceMetalness[index];
+        if (type === "wood" && this.woodTexture) {
+          pbrProps.map = this.woodTexture;
+        } else if (type === "glass" && this.glassTexture) {
+          pbrProps.map = this.glassTexture;
+        } else if (type === "metal" && this.metalTexture) {
+          pbrProps.map = this.metalTexture;
+        } else if (type === "fur" && this.furTexture) {
+          pbrProps.map = this.furTexture;
+        }
         return new THREE.MeshStandardMaterial(pbrProps);
       }
     });
