@@ -3,12 +3,12 @@ import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import { MATERIAL_TYPES } from "./materials";
 
 const FACE_VIEWS = [
-  new THREE.Vector3(1, 0, 0), // Face 0 → +X
-  new THREE.Vector3(-1, 0, 0), // Face 1 → -X
-  new THREE.Vector3(0, 1, 0), // Face 2 → +Y
-  new THREE.Vector3(0, -1, 0), // Face 3 → -Y
-  new THREE.Vector3(0, 0, 1), // Face 4 → +Z
-  new THREE.Vector3(0, 0, -1), // Face 5 → -Z
+  new THREE.Vector3(1, 0, 0), // Face 0 → Right (+X)
+  new THREE.Vector3(-1, 0, 0), // Face 1 → Left (-X)
+  new THREE.Vector3(0, 1, 0), // Face 2 → Top (+Y)
+  new THREE.Vector3(0, -1, 0), // Face 3 → Bottom (-Y)
+  new THREE.Vector3(0, 0, 1), // Face 4 → Front (+Z)
+  new THREE.Vector3(0, 0, -1), // Face 5 → Back (-Z)
 ];
 
 const ThreeScene = {
@@ -23,7 +23,21 @@ const ThreeScene = {
   furTexture: null,
   dragging: false,
   prev: { x: 0, y: 0 },
-  keys: { w: false, a: false, s: false, d: false, arrowUp: false, arrowDown: false, arrowLeft: false, arrowRight: false },
+  keys: {
+    w: false,
+    a: false,
+    s: false,
+    d: false,
+    arrowUp: false,
+    arrowDown: false,
+    arrowLeft: false,
+    arrowRight: false,
+  },
+  isTransitioning: false,
+  transitionStart: null,
+  transitionEnd: null,
+  transitionStartTime: null,
+  transitionDuration: 500, // milliseconds
 
   init(canvas) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -127,61 +141,73 @@ const ThreeScene = {
 
   rotateCameraToFace(faceIndex) {
     const dir = FACE_VIEWS[faceIndex].clone().normalize();
+    const currentDistance = this.camera.position.length();
+    const targetPos = dir.clone().multiplyScalar(currentDistance);
 
-    const distance = 5; // distance from cube
-    const targetPos = dir.multiplyScalar(distance);
+    this.cube.rotation.set(0, 0, 0);
 
-    // Start → End interpolation
-    const start = this.camera.position.clone();
-    const end = targetPos;
-
-    let t = 0;
-    const duration = 0.5; // half second rotation
-
-    const animateTransition = () => {
-      t += 0.02;
-
-      // smoothstep easing
-      const k = t / duration;
-      const smooth = k * k * (3 - 2 * k);
-
-      this.camera.position.lerpVectors(start, end, smooth);
-      this.camera.lookAt(0, 0, 0);
-
-      if (t < duration) {
-        requestAnimationFrame(animateTransition);
-      }
-    };
-
-    animateTransition();
+    this.transitionStart = this.camera.position.clone();
+    this.transitionEnd = targetPos;
+    this.transitionStartTime = performance.now();
+    this.isTransitioning = true;
   },
 
   orbitCamera() {
+    if (this.isTransitioning) return;
+
+    const isAnyKeyPressed =
+      this.keys.w ||
+      this.keys.a ||
+      this.keys.s ||
+      this.keys.d ||
+      this.keys.arrowUp ||
+      this.keys.arrowDown ||
+      this.keys.arrowLeft ||
+      this.keys.arrowRight;
+
+    if (!isAnyKeyPressed) return;
+
     const orbitSpeed = 0.02;
-    
-    // Get current spherical position
+
     const offset = this.camera.position.clone();
     const radius = offset.length();
-    
-    // Convert to spherical coordinates
+
     let theta = Math.atan2(offset.x, offset.z);
     let phi = Math.acos(offset.y / radius);
-    
-    // Update angles based on key presses
+
     if (this.keys.a || this.keys.arrowLeft) theta -= orbitSpeed;
     if (this.keys.d || this.keys.arrowRight) theta += orbitSpeed;
     if (this.keys.w || this.keys.arrowUp) phi -= orbitSpeed;
     if (this.keys.s || this.keys.arrowDown) phi += orbitSpeed;
-    
-    // Clamp phi to prevent flipping
+
     phi = Math.max(0.1, Math.min(Math.PI - 0.1, phi));
-    
-    // Convert back to Cartesian coordinates
+
     this.camera.position.x = radius * Math.sin(phi) * Math.sin(theta);
     this.camera.position.y = radius * Math.cos(phi);
     this.camera.position.z = radius * Math.sin(phi) * Math.cos(theta);
-    
+
     this.camera.lookAt(0, 0, 0);
+  },
+
+  updateTransition() {
+    if (!this.isTransitioning) return;
+
+    const elapsed = performance.now() - this.transitionStartTime;
+    const t = Math.min(elapsed / this.transitionDuration, 1);
+    const smooth = t * t * (3 - 2 * t);
+
+    this.camera.position.lerpVectors(
+      this.transitionStart,
+      this.transitionEnd,
+      smooth
+    );
+    this.camera.lookAt(0, 0, 0);
+
+    if (t >= 1) {
+      this.camera.position.copy(this.transitionEnd);
+      this.camera.lookAt(0, 0, 0);
+      this.isTransitioning = false;
+    }
   },
 
   resize(canvas) {
@@ -236,6 +262,7 @@ const ThreeScene = {
 
   animate() {
     requestAnimationFrame(() => this.animate());
+    this.updateTransition();
     this.orbitCamera();
     this.renderer.render(this.scene, this.camera);
   },
