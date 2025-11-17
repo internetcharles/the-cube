@@ -1,13 +1,19 @@
+@import url("https://fonts.googleapis.com/css2?family=Stack+Sans+Headline:wght@200..700&display=swap");
+
 .ui-container {
   height: 100vh;
   display: flex;
   overflow: hidden;
+  font-family: "Stack Sans Headline", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
 }
 
 .ui-panel {
   width: 260px;
   padding: 20px;
-  background: #222;
+  background: linear-gradient(180deg, #1a1a3e 0%, #2e1a3e 100%);
   color: #fff;
 }
 

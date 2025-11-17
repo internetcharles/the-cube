@@ -23,6 +23,7 @@ const ThreeScene = {
   furTexture: null,
   dragging: false,
   prev: { x: 0, y: 0 },
+  keys: { w: false, a: false, s: false, d: false, arrowUp: false, arrowDown: false, arrowLeft: false, arrowRight: false },
 
   init(canvas) {
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -95,6 +96,31 @@ const ThreeScene = {
 
     canvas.addEventListener("pointerup", () => (this.dragging = false));
 
+    // Keyboard Controls
+    window.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+      if (key === "w") this.keys.w = true;
+      if (key === "a") this.keys.a = true;
+      if (key === "s") this.keys.s = true;
+      if (key === "d") this.keys.d = true;
+      if (key === "arrowup") this.keys.arrowUp = true;
+      if (key === "arrowdown") this.keys.arrowDown = true;
+      if (key === "arrowleft") this.keys.arrowLeft = true;
+      if (key === "arrowright") this.keys.arrowRight = true;
+    });
+
+    window.addEventListener("keyup", (e) => {
+      const key = e.key.toLowerCase();
+      if (key === "w") this.keys.w = false;
+      if (key === "a") this.keys.a = false;
+      if (key === "s") this.keys.s = false;
+      if (key === "d") this.keys.d = false;
+      if (key === "arrowup") this.keys.arrowUp = false;
+      if (key === "arrowdown") this.keys.arrowDown = false;
+      if (key === "arrowleft") this.keys.arrowLeft = false;
+      if (key === "arrowright") this.keys.arrowRight = false;
+    });
+
     this.animate();
     window.addEventListener("resize", () => this.resize(canvas));
   },
@@ -128,6 +154,34 @@ const ThreeScene = {
     };
 
     animateTransition();
+  },
+
+  orbitCamera() {
+    const orbitSpeed = 0.02;
+    
+    // Get current spherical position
+    const offset = this.camera.position.clone();
+    const radius = offset.length();
+    
+    // Convert to spherical coordinates
+    let theta = Math.atan2(offset.x, offset.z);
+    let phi = Math.acos(offset.y / radius);
+    
+    // Update angles based on key presses
+    if (this.keys.a || this.keys.arrowLeft) theta -= orbitSpeed;
+    if (this.keys.d || this.keys.arrowRight) theta += orbitSpeed;
+    if (this.keys.w || this.keys.arrowUp) phi -= orbitSpeed;
+    if (this.keys.s || this.keys.arrowDown) phi += orbitSpeed;
+    
+    // Clamp phi to prevent flipping
+    phi = Math.max(0.1, Math.min(Math.PI - 0.1, phi));
+    
+    // Convert back to Cartesian coordinates
+    this.camera.position.x = radius * Math.sin(phi) * Math.sin(theta);
+    this.camera.position.y = radius * Math.cos(phi);
+    this.camera.position.z = radius * Math.sin(phi) * Math.cos(theta);
+    
+    this.camera.lookAt(0, 0, 0);
   },
 
   resize(canvas) {
@@ -182,6 +236,7 @@ const ThreeScene = {
 
   animate() {
     requestAnimationFrame(() => this.animate());
+    this.orbitCamera();
     this.renderer.render(this.scene, this.camera);
   },
 };
