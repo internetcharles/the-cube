@@ -43,7 +43,12 @@ function App() {
 
   // Update materials whenever UI changes
   useEffect(() => {
-    ThreeScene.updateMaterials(mode, faceMaterials, faceRoughness, faceMetalness);
+    ThreeScene.updateMaterials(
+      mode,
+      faceMaterials,
+      faceRoughness,
+      faceMetalness
+    );
   }, [mode, faceMaterials, faceRoughness, faceMetalness]);
 
   return (
@@ -94,7 +99,9 @@ function App() {
                 max="1"
                 step="0.01"
                 value={faceRoughness[selectedFace]}
-                onChange={(e) => updateFaceRoughness(parseFloat(e.target.value))}
+                onChange={(e) =>
+                  updateFaceRoughness(parseFloat(e.target.value))
+                }
               />
 
               <label>Metalness: {faceMetalness[selectedFace].toFixed(2)}</label>
@@ -104,22 +111,15 @@ function App() {
                 max="1"
                 step="0.01"
                 value={faceMetalness[selectedFace]}
-                onChange={(e) => updateFaceMetalness(parseFloat(e.target.value))}
+                onChange={(e) =>
+                  updateFaceMetalness(parseFloat(e.target.value))
+                }
               />
             </>
           )}
         </div>
-        <div style={{ flex: 1, position: "relative" }}>
-          <canvas
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "block",
-              margin: 0,
-              padding: 0,
-            }}
-            ref={canvasRef}
-          />
+        <div className="canvas-container">
+          <canvas className="canvas" ref={canvasRef} />
         </div>
       </div>
     </>

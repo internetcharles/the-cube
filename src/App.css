@@ -10,3 +10,16 @@
   background: #222;
   color: #fff;
 }
+
+.canvas-container {
+  flex: 1;
+  position: relative;
+}
+
+.canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
