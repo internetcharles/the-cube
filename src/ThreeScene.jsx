@@ -16,6 +16,7 @@ const ThreeScene = {
   camera: null,
   scene: null,
   cube: null,
+  directionalLight: null,
   dragging: false,
   prev: { x: 0, y: 0 },
 
@@ -33,9 +34,9 @@ const ThreeScene = {
     this.scene = new THREE.Scene();
 
     // Lighting
-    const directional = new THREE.DirectionalLight(0xffffff, 1);
-    directional.position.set(3, 5, 2);
-    this.scene.add(directional);
+    this.directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    this.directionalLight.position.set(3, 5, 2);
+    this.scene.add(this.directionalLight);
 
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.3));
 
@@ -130,6 +131,12 @@ const ThreeScene = {
         return new THREE.MeshStandardMaterial(pbrProps);
       }
     });
+  },
+
+  updateLight(position, intensity) {
+    if (!this.directionalLight) return;
+    this.directionalLight.position.set(position.x, position.y, position.z);
+    this.directionalLight.intensity = intensity;
   },
 
   animate() {

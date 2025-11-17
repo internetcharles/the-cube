@@ -11,6 +11,8 @@ function App() {
   const [faceMaterials, setFaceMaterials] = useState(Array(6).fill("wood"));
   const [faceRoughness, setFaceRoughness] = useState(Array(6).fill(0.7));
   const [faceMetalness, setFaceMetalness] = useState(Array(6).fill(0.0));
+  const [lightPosition, setLightPosition] = useState({ x: 3, y: 5, z: 2 });
+  const [lightIntensity, setLightIntensity] = useState(1);
 
   function updateFaceMaterial(mat) {
     const updated = [...faceMaterials];
@@ -50,6 +52,11 @@ function App() {
       faceMetalness
     );
   }, [mode, faceMaterials, faceRoughness, faceMetalness]);
+
+  // Update light whenever properties change
+  useEffect(() => {
+    ThreeScene.updateLight(lightPosition, lightIntensity);
+  }, [lightPosition, lightIntensity]);
 
   return (
     <>
@@ -117,6 +124,63 @@ function App() {
               />
             </>
           )}
+
+          <h3>Lighting</h3>
+
+          <label>Light X: {lightPosition.x.toFixed(1)}</label>
+          <input
+            type="range"
+            min="-10"
+            max="10"
+            step="0.1"
+            value={lightPosition.x}
+            onChange={(e) =>
+              setLightPosition({
+                ...lightPosition,
+                x: parseFloat(e.target.value),
+              })
+            }
+          />
+
+          <label>Light Y: {lightPosition.y.toFixed(1)}</label>
+          <input
+            type="range"
+            min="-10"
+            max="10"
+            step="0.1"
+            value={lightPosition.y}
+            onChange={(e) =>
+              setLightPosition({
+                ...lightPosition,
+                y: parseFloat(e.target.value),
+              })
+            }
+          />
+
+          <label>Light Z: {lightPosition.z.toFixed(1)}</label>
+          <input
+            type="range"
+            min="-10"
+            max="10"
+            step="0.1"
+            value={lightPosition.z}
+            onChange={(e) =>
+              setLightPosition({
+                ...lightPosition,
+                z: parseFloat(e.target.value),
+              })
+            }
+          />
+
+          <label>Light Intensity: {lightIntensity.toFixed(2)}</label>
+          <input
+            type="range"
+            min="0"
+            max="5"
+            step="0.1"
+            value={lightIntensity}
+            onChange={(e) => setLightIntensity(parseFloat(e.target.value))}
+          />
         </div>
         <div className="canvas-container">
           <canvas className="canvas" ref={canvasRef} />
