@@ -6,13 +6,19 @@ import "./App.css";
 function App() {
   const canvasRef = useRef();
 
-  const [mode, setMode] = useState("basic");
+  const [faceModes, setFaceModes] = useState(Array(6).fill("basic"));
   const [selectedFace, setSelectedFace] = useState(0);
   const [faceMaterials, setFaceMaterials] = useState(Array(6).fill("wood"));
   const [faceRoughness, setFaceRoughness] = useState(Array(6).fill(0.7));
   const [faceMetalness, setFaceMetalness] = useState(Array(6).fill(0.0));
   const [lightPosition, setLightPosition] = useState({ x: 3, y: 5, z: 2 });
   const [lightIntensity, setLightIntensity] = useState(1);
+
+  function updateFaceMode(mode) {
+    const updated = [...faceModes];
+    updated[selectedFace] = mode;
+    setFaceModes(updated);
+  }
 
   function updateFaceMaterial(mat) {
     const updated = [...faceMaterials];
@@ -46,12 +52,12 @@ function App() {
   // Update materials whenever UI changes
   useEffect(() => {
     ThreeScene.updateMaterials(
-      mode,
+      faceModes,
       faceMaterials,
       faceRoughness,
       faceMetalness
     );
-  }, [mode, faceMaterials, faceRoughness, faceMetalness]);
+  }, [faceModes, faceMaterials, faceRoughness, faceMetalness]);
 
   // Update light whenever properties change
   useEffect(() => {
@@ -64,12 +70,6 @@ function App() {
         {/* UI Panel */}
         <div className="ui-panel">
           <h2>Cube Controls</h2>
-
-          <label>Render Mode</label>
-          <select value={mode} onChange={(e) => setMode(e.target.value)}>
-            <option value="basic">Basic</option>
-            <option value="pbr">PBR</option>
-          </select>
 
           <h3>Face Settings</h3>
 
@@ -85,6 +85,15 @@ function App() {
             ))}
           </select>
 
+          <label>Render Mode</label>
+          <select
+            value={faceModes[selectedFace]}
+            onChange={(e) => updateFaceMode(e.target.value)}
+          >
+            <option value="basic">Basic</option>
+            <option value="pbr">PBR</option>
+          </select>
+
           <label>Material</label>
           <select
             value={faceMaterials[selectedFace]}
@@ -97,7 +106,7 @@ function App() {
             ))}
           </select>
 
-          {mode === "pbr" && (
+          {faceModes[selectedFace] === "pbr" && (
             <>
               <label>Roughness: {faceRoughness[selectedFace].toFixed(2)}</label>
               <input

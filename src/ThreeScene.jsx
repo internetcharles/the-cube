@@ -119,10 +119,10 @@ const ThreeScene = {
     this.camera.updateProjectionMatrix();
   },
 
-  updateMaterials(mode, faceMaterials, faceRoughness, faceMetalness) {
+  updateMaterials(faceModes, faceMaterials, faceRoughness, faceMetalness) {
     this.cube.material = faceMaterials.map((type, index) => {
       const mat = MATERIAL_TYPES[type];
-      if (mode === "basic") {
+      if (faceModes[index] === "basic") {
         return new THREE.MeshBasicMaterial(mat.basic);
       } else {
         const pbrProps = { ...mat.pbr };
