@@ -1,0 +1,12 @@
+.ui-container {
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+.ui-panel {
+  width: 260px;
+  padding: 20px;
+  background: #222;
+  color: #fff;
+}
